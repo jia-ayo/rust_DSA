@@ -1,7 +1,4 @@
-pub struct Option<T>{
-    Some(T),
-    None
-}
+
 fn main() {
     let a = divide(10,5);
     let b = divide(10,0);
