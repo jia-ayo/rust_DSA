@@ -5,6 +5,7 @@ edition = "2021"
 keywords = ["do", "not", "use"]
 description = "Do not use crate its for demo purpose"
 readme = "readme.md"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
