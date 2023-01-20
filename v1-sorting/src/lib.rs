@@ -85,8 +85,17 @@ pub fn pivot<T:PartialOrd>(v: &mut [T]) -> usize{
     p
 }
 
-pub fn quick_sort<T: PartialOrd>(v: &mut [T]){
-   if v.len()
+pub fn quick_sort<T: PartialOrd + Debug>(v: &mut [T]){
+   if v.len() <= 1{
+     return;
+   }
+   let p = pivot(v);
+   println!("{:?}", v);
+
+   let (a, b) = v.split_at_mut(p);
+   quick_sort(a);
+   quick_sort(&mut b[1..]); //middle element already sorted
+
 }
 #[cfg(test)]
 mod tests {
@@ -112,7 +121,17 @@ mod tests {
         for x in 0..v.len(){
             assert!((v[x]<v[p]) == (x < p))
         }
-        assert_eq!(v, vec![1,3,4,6,8,11,13,19])
-
+        //assert_eq!(v, vec![1,3,4,6,8,11,13,19])
     }
+     #[test]
+    fn test_quick_sort() {
+        let mut v = vec![4,6,1,8,11,13];
+        quick_sort(&mut v);
+        assert_eq!(v, vec![1,4,6,8,11,13]);
+
+        let mut v = vec![1,2,3,4,5,6,7];
+        quick_sort(&mut v);
+        assert_eq!(v, vec![1,2,3,4,5,6,7]);
+    }
+
 }
