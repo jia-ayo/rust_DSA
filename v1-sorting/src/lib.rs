@@ -73,10 +73,9 @@ pub fn pivot<T:PartialOrd>(v: &mut [T]) -> usize{
     //everything lower should be before it
     //everything higher should be after it 
     //return it's location
-    let mut p = 0;
-    // b_rand::rand(v.len());
-    // v.swap(p, 0);
-    // p = 0;
+    let mut p = b_rand::rand(v.len());
+    v.swap(p, 0);
+    p = 0;
 
     for i in 1..v.len(){
         if v[i] < v[p]{
@@ -136,7 +135,7 @@ mod tests {
         let mut v = vec![1,2,3,4,5,6,7];
         quick_sort(&mut v);
         assert_eq!(v, vec![1,2,3,4,5,6,7]);
-        //panic!()
+        panic!()
     }
 
 }
