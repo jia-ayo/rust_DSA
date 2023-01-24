@@ -1,6 +1,7 @@
 fn main() {
     for i in 0..10{
-        println!("native ={}, iter={}, dynamic={:?}", fibonacci(i), fibonacci_iter(i), fibonacci_dynamic(i))
+        println!("native ={}, iter={}, dynamic={:?}", fibonacci(i), fibonacci_iter(i), fibonacci_dynamic(i));
+        println!("recursive={}", fibonacci_dynamic_tail_recursive(i))
     }
 }
 //fib5 = fib(4) + fib(3) = fib3 + fib2 + fib2 + fib1
@@ -40,3 +41,12 @@ pub fn fibonacci_dynamic(n:i32) ->(i32, i32){
 }
 
 //challenge: fibonacci_dynamic_tail_recursive 
+pub fn fibonacci_dynamic_tail_recursive(n: i32) -> i32 {
+    fn f(n:i32  , a:i32 , b: i32) -> i32 {
+        match n {
+            0 => a,
+            _ => f(n - 1, a + b, a),
+        }
+    }
+    f(n, 0, 1)
+}
