@@ -71,8 +71,8 @@ impl <T> DbList<T>{
                     prev: None,
                     next: None,
                 }));
-                self.first = Some(Weak::upgrade(&new_data));
-                self.last = Some(new_data);
+                self.first = Some(new_data.clone());
+                self.last = Some(Rc::downgrade(&new_data));
             }
         }
     }
@@ -83,5 +83,6 @@ fn main() {
     dl.push_front(5);
     dl.push_back(2);
     dl.push_front(3);
+    dl.push_back(5);
     println!("dl ={:?}", dl);
 }
