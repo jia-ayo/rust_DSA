@@ -24,11 +24,28 @@ impl<T> BinData<T>{
          //move left of right to the right of starting again
          self.right = BinTree(res.left.0.take());
          self.right.set_height();
-         //set th result
+         //set th result left nodeto the start node
          res.left = BinTree(Some(Box::new(self)));
          res.left.set_height();
          res.h = 1 + std::cmp::max(res.left.height(), res.right.height());
-         res;
+         res
+    }
+
+    pub fn rot_right(mut self) -> Box<Self>{
+        //result is the right node
+         let mut res = match self.left.0.take() {
+             Some(res) => res,
+             None=> return Box::new(self), // no right node how can rotate
+         };
+
+         //move left of right to the right of starting again
+         self.left = BinTree(res.right.0.take());
+         self.left.set_height();
+         //set th result left nodeto the start node
+         res.right = BinTree(Some(Box::new(self)));
+         res.right.set_height();
+         res.h = 1 + std::cmp::max(res.left.height(), res.right.height());
+         res
     }
 }
 
@@ -49,6 +66,14 @@ impl <T> BinTree<T> {
             t.h = 1+ std::cmp::max(t.left.height(), t.right.height())
         }
     }
+
+    pub fn rot_left(&mut self) {
+        self.0 = self.0.take().map(|v| v.rot_left())
+    }
+
+    pub fn rot_right(&mut self) {
+        self.0 = self.0.take().map(|v| v.rot_right())
+    }
     
 }
 
@@ -56,12 +81,18 @@ impl <T> BinTree<T> {
 
 impl<T:PartialOrd> BinTree<T>{
     pub fn add_sorted(&mut self, data: T){
-        match self.0{
+        let rot_dir = match self.0{
             Some(ref mut bd)=>{
                 if data < bd.data {
-                    bd.left.add_sorted(data)
+                    bd.left.add_sorted(data);
+                    if bd.left.height() - bd.right.height() > 1{
+                        1
+                    }else{0}
                 } else{
-                    bd.right.add_sorted(data)
+                    bd.right.add_sorted(data);
+                    if bd.right.height()- bd.left.height() > 1{
+                        -1
+                    }else{0}
                 }
             }
             None=>{
@@ -71,10 +102,15 @@ impl<T:PartialOrd> BinTree<T>{
                     left:BinTree::new(), 
                     right:BinTree::new() 
                 }));
-
+              0
             }
+        };
+        match rot_dir{
+            1  => self.rot_right(),
+            -1 => self.rot_left(),
+            _  =>self.set_height(),
+            
         }
-        self.set_height();
     }
 }
 
@@ -99,5 +135,13 @@ fn main() {
     t.add_sorted(3);
     t.add_sorted(7);
     t.print_lfirst(0);
+
+    for i in 0..100000{
+        t.add_sorted(i)
+    }
+    t.print_lfirst(0);
+    // println!("------------------------------");
+    // t.rot_left();
+    // t.print_lfirst(0);
     // println!("t = {:?}", t);
 }
