@@ -63,6 +63,29 @@ impl HuffNode{
         }
         Some(res)
     }
+
+//     fn decode_string(s: &str, root: &Box<HuffNode>) -> String {
+
+//     let mut retval = "".to_string();
+//     let mut nodeptr = root;
+
+//     for x in s.chars() {
+//         if x == '0' {
+//             if let Some(ref l) = nodeptr.l{
+//                 nodeptr = l;
+//             }
+//         } else {
+//             if let Some(ref r) = nodeptr.r{
+//                 nodeptr = r;
+//             }
+//         }
+//         if let Some(ch) = nodeptr.ch {
+//             retval.push(ch);
+//             nodeptr = root;
+//         }
+//     }
+//     retval
+// }
 }
 
 pub fn build_tree(s: &str)-> HuffNode{
