@@ -23,16 +23,22 @@ pub struct RccGraph<T, E>{
    nodes: Vec<Rcc<RccNode<T, E>>>,
 }
 
+pub struct RccNode<T, E>{
+    data: T,
+    edges: Vec<(E, Weak<RefCell<RccNode<T, E>>>)>
+}
+
 //Map based
 //Maps point from  key to value normally quickly eg Hashmap
-pub struct Mapgraph<T, E, ID:Hash>{
+pub struct MapGraph<T, E, ID:Hash + Eq>{
     mp: HashMap<ID, T>,
     edges:  Vec<(E, ID, ID)>,
 }
 
-pub struct RccNode<T, E>{
-    data: T,
-    edges: Vec<(E, Weak<RefCell<RccNode<T, E>>>)>
+//mappoint based
+pub struct MapPGraph<T, E, ID:Hash + Eq>{
+    mp: HashMap<ID, (T, Vec<ID>)>,
+    edges:  HashMap<ID, (E, ID, ID)>,
 }
 
 fn main() {
