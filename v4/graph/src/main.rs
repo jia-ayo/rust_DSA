@@ -1,7 +1,6 @@
 use core::fmt;
 use std::cell::RefCell;
-use std::collections::HashMap;
-use std::fmt::write;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::rc::{Weak, Rc};
 
@@ -46,11 +45,13 @@ impl<ID:Eq> Route<ID>{
 }
 
 impl <ID:fmt::Debug> fmt::Display for Route<ID>{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(ref p)= self.path;
-        write!(f, "{}-{}-",p,self.ln)
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if let Some(ref p)= self.path{
+            write!(f, "{}-{}-", p , self.len)?;
+        }
+        write!(f, "{:?}", self.pos)
     }
-    write!(f, ":?", self.pos); 
+    
 }
 
 impl GraphErr{
@@ -126,6 +127,62 @@ impl <T, E, ID: Clone + Hash + Eq> MapPGraph<T, E, ID>{
         Ok(())
     }
 }
+
+impl <T, E:Weighted, ID: Clone + Hash + Eq> MapPGraph<T,E,ID>{
+    pub fn shortest_path(&self,from:ID,to:ID) -> Option<Rc<Route<ID>>>{
+        let mut visited = HashSet::new();
+        let mut routes = Vec::new();
+        routes.push(Route::start_rc(from));
+        loop{
+            let c_route = routes.pop()?;
+            if to == c_route.pos{
+               return Some(c_route);
+            }
+            if visited.contains(&c_route.pos){
+                //no point in searching the same place twice
+               continue;
+            }
+            visited.insert(c_route.pos.clone());
+
+            let exists = self.data.get(&c_route.pos)?;
+
+            for eid in &exists.1{
+                let edge = self.edges.get(eid)?;
+                let npos = if edge.1 == c_route.pos{
+                    //opposite side if edge to current position
+                    edge.2.clone()
+                }else{
+                    edge.1.clone()
+                };
+                let nlen = c_route.len + edge.0.weight();
+                let nroute = Rc::new(Route{
+                      pos:npos,
+                      len: nlen,
+                      path: Some(c_route.clone()),//RC increase
+                });
+                if routes.len() == 0 {
+                    routes.push(nroute);
+                    continue;
+                }
+                //insert into the list sorted 
+                let mut iafter = routes.len()-1;
+                loop{
+                    if routes[iafter].len > nlen {
+                        //lowest element last 
+                        routes.insert(iafter+1, nroute);
+                        break;
+                    }
+                    if iafter == 0 {
+                        //reached end
+                        routes.insert(0, nroute);
+                        break;
+                    }
+                    iafter -= 1;
+                }
+            }
+        }
+    }
+}
 fn main() ->Result<(), GraphErr> {
     let mut g = MapPGraph::new();
     for x in vec!['A', 'B','C','D','E', 'F','G','H']{
@@ -138,6 +195,11 @@ fn main() ->Result<(), GraphErr> {
     g.add_edge('e', 'A', 'C', 4)?;
     g.add_edge('f', 'H', 'G', 5)?;
     g.add_edge('g', 'G', 'A', 8)?;
+    g.add_edge('h', 'A', 'F', 3)?;
+    g.add_edge('i', 'F', 'E', 15)?;
+    g.add_edge('j', 'C', 'E', 12)?;
     println!("Hello, GRAPH {:?}",g);
+    println!("Shortest path A-D: {}", g.shortest_path('A','D').unwrap());
+    println!("Shortest path H-B: {}", g.shortest_path('H','B').unwrap());
     Ok(())
 }
