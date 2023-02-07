@@ -3,6 +3,7 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::rc::{Weak, Rc};
+use rand::prelude::*;
 
 #[derive(Debug)]
 pub struct GraphErr{
@@ -203,6 +204,54 @@ impl <T, E:Weighted, ID: Clone + Hash + Eq> MapPGraph<T,E,ID>{
         }
         self.shortest_path_r(route, start)//return options like salesman
     }
+
+    pub fn complete_path(&self, path: &[ID]) -> Option<Rc<Route<ID>>> {
+        if path.len() < 2{
+            return  None;
+        }
+        let mut route = Route::start_rc(path[0].clone());
+        for pos in &path[1..path.len()-1]{
+            if !route.contains(pos){
+                route = self.shortest_path_r(route, pos.clone())?;
+            }  
+        }
+        self.shortest_path_r(route, path[path.len()-1].clone())
+    }
+}
+
+impl <T, E:Weighted, ID: Clone + Hash + Eq + fmt::Debug> MapPGraph<T,E,ID>{
+    pub fn iter_salesman(&self, start: ID)->Option<Rc<Route<ID>>>{
+        let mut bpath: Vec<ID> = self.data.keys().map(|K| K.clone()).collect();
+        bpath.shuffle(&mut rand::thread_rng());
+        //move start to front
+        for n in 0..bpath.len(){
+            if bpath[n]== start{
+                bpath.swap(0, n);
+                break;
+            }
+        }
+        bpath.push(start);
+
+        let mut broute = self.complete_path(&bpath)?;
+        let mut no_imp = 0 ;
+        loop {
+            let mut p2 = bpath.clone();
+            let sa = (rand::random::<usize>() %(p2.len()-2)) +1;//not the end
+            let sb = (rand::random::<usize>() %(p2.len()-2)) +1;//not the end
+            p2.swap(sa, sb);
+            let r2 = self.complete_path(&p2)?;
+            if r2.len < broute.len{
+                println!("improvemnt on {}=\n{}", broute,r2);
+                bpath= p2;
+                broute= r2;
+                no_imp =0;
+            }
+            no_imp +=1;
+            if no_imp >= 50 {
+                return  Some(broute);
+            }
+        }
+    }
 }
 fn main() ->Result<(), GraphErr> {
     let mut g = MapPGraph::new();
@@ -223,5 +272,6 @@ fn main() ->Result<(), GraphErr> {
     println!("Shortest path A-D: {}", g.shortest_path('A','D').unwrap());
     println!("Shortest path H-B: {}", g.shortest_path('H','B').unwrap());
     println!("greedy salesman A = {}", g.greedy_salesman('A').unwrap());
+    println!("iter salesman A = {}", g.iter_salesman('A').unwrap());
     Ok(())
 }
