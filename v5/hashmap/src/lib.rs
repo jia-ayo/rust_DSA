@@ -4,7 +4,7 @@ use hasher::hash;
 use std::borrow::Borrow;
 
 const BSIZE:usize=8;
-const BGROW:usize = 8;
+const BGROW:usize = 2;
 
 #[derive(Debug)]
 pub struct  BucketList<K,V>{
@@ -130,7 +130,7 @@ impl <K:Hash + Eq,V> HMap<K,V>{
     }
     pub fn move_bucket(&mut self){
         if self.n_moved == 0{
-            self.grow.set_buckets(self.main.buckets.len() + BGROW);
+            self.grow.set_buckets(self.main.buckets.len() * BGROW);
         }
         if let Some(b)= self.main.bucket(self.n_moved){
             for (k,v) in b{
@@ -145,11 +145,49 @@ impl <K:Hash + Eq,V> HMap<K,V>{
     }
     
 }
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn it_works() {
-//     }
-// }
+    #[test]
+    fn test_get_right_values() {
+        let mut hm = HMap::new();
+        hm.insert("james".to_string(), 18);
+        hm.insert("dave".to_string(), 45);
+        hm.insert("andy".to_string(), 23);
+        hm.insert("pete".to_string(), 14);
+        hm.insert("steve".to_string(), 90);
+        hm.insert("jane".to_string(), 105);
+        hm.insert("grader".to_string(), 23);
+        hm.insert("irene".to_string(), 65);
+        hm.insert("sam".to_string(), 66);
+        hm.insert("andrex".to_string(), 77);
+        hm.insert("andrew".to_string(), 89);
+        hm.insert("garalt".to_string(), 99);
+        //repeated
+        hm.insert("dave".to_string(), 83);
+
+        assert_eq!(hm.get("garalt"), Some(&99));
+        assert_eq!(hm.get("sam"), Some(&66));
+        assert_eq!(hm.get("dave"), Some(&83));
+        assert_eq!(hm.len(), 12);
+        // println!("Hmap = {:?}", hm);
+        // panic!();
+    }
+    #[test]
+    fn test_lots_of_numbers(){
+        let mut hm = HMap::new();
+        for x in 0..1000{
+            hm.insert(x,x+250)
+        }
+        assert_eq!(hm.len(), 1000);
+        assert_eq!(hm.get(&500),Some(&750));
+        for (n,x) in hm.main.buckets.iter().enumerate(){
+            assert!(x.len() < 10, "{}", format!("main bucket to big {}:{}", n ,x.len()))
+        }
+        for (n,x) in hm.grow.buckets.iter().enumerate(){
+            assert!(x.len() < 10, "{}",  format!("grow bucket to big {}:{}", n ,x.len()))
+        }
+    
+    }
+}
