@@ -1,72 +1,106 @@
-#[derive(Copy,Clone, PartialEq, Debug)]
-pub struct GenData{
-    pos: usize,
-    gen: u64,
+use crate::gen::GenData;
+
+//this could be implemented by vec typeobject, tree or hashmap depending on how full
+//expect it to be 
+pub trait EcsStore<T>{
+   fn add(&mut self, f:GenData,t:T);
+   fn get(&self, g:GenData)->Option<&T>;
+   fn get_mut(&mut self, g:GenData)->Option<&mut T>;
+   fn drop(&mut self,g:GenData);
+   //optional but helpful could be trait even
+   //
+   fn for_each<F:FnMut(GenData,&T)>(&self, f:F);
+   fn for_each_mut<F:FnMut(GenData,&mut T)>(&mut self,  f:F);
 }
 
-pub struct EntityActive{
-    active: bool,
-    gen: u64,
+pub struct VecStore<T>{
+    items: Vec<Option<(u64, T)>>,
 }
-
-//wher we get new GenerationIds from 
-pub struct GenManger{
-    items: Vec<EntityActive>,
-    drops:Vec<usize>,//list of all drop
-}
-
-impl GenManger{
+impl<T> VecStore<T>{
     pub fn new()->Self{
-        GenManger { 
-            items: Vec::new(), 
-            drops: Vec::new() 
-        }
-    }
-
-    pub fn next (&mut self) -> GenData{
-        if let Some(loc) = self.drops.pop(){
-            //most recent drop 
-            let ea = &mut  self.items[loc];
-            ea.active = true;
-            ea.gen += 1;
-            return GenData{
-                pos: loc,
-                gen: ea.gen
-            }
-        }
-        //if nothing left in drops , add to the end 
-        self.items.push(EntityActive {
-             active: true, 
-             gen: 0
-            }
-        );
-        return GenData{
-            gen: 0,
-            pos: self.items.len() - 1,
-        };
-
-    }
-
-    pub fn drop(&mut self, g:GenData){
-        if let Some(ea) = self.items.get_mut(g.pos){
-            if ea.active && ea.gen == g.gen {
-                //dont drop newer item than given 
-                ea.active = false;
-                self.drops.push(g.pos);
-
-            }
-        }
+        VecStore { items: Vec::new() }
     }
 }
 
-#[cfg(test)]
-mod tests{
-    use super::*;
-    #[test]
-    fn test_items_drop(){
-        let mut gm = GenManger::new();
+impl<T> EcsStore<T> for VecStore<T> {
+    fn add(&mut self, g:GenData,t:T) {
+        while g.pos >= self.items.len(){
+            self.items.push(None);
+        }
+        self.items[g.pos] = Some((g.gen,t))
+    }
 
-        let  g = gm.next();
-        assert_eq!(g,GenData{gen:0,pos:0})
+    fn  get( &self, g:GenData)->Option<&T>{
+        //get returns option, vec holding option
+        if let Some(Some((ig,d))) = self.items.get(g.pos){
+            if *ig == g.gen{
+                return Some(d)
+            }
+        }
+        None
+    }
+
+    fn  get_mut( &mut self, g:GenData)->Option<&mut T>{
+        //get returns option, vec holding option
+        if let Some(Some((ig,d))) = self.items.get_mut(g.pos){
+            if *ig == g.gen{
+                return Some(d)
+            }
+        }
+        None
+    }
+
+    fn drop(&mut self,g:GenData) {
+        if let Some(Some((ig,_))) = self.items.get(g.pos){
+            if *ig == g.gen{
+                self.items[g.pos] = None
+            }
+        }
+    }
+
+    fn for_each<F: FnMut(GenData,&T)>(&self,mut f:F){
+       for (n,x ) in self.items.iter().enumerate(){
+            if let Some((g,d)) = x{
+                f(GenData{gen:*g, pos:n},d);
+            }
+       }    
+    }
+
+    fn for_each_mut<F: FnMut(GenData, &mut T)>(&mut self,mut f:F){
+       for (n, x ) in self.items.iter_mut().enumerate(){
+            if let Some((g, d)) = x{
+                f(GenData{gen:*g, pos:n}, d);
+            }
+       }    
+    }
+
+
+
+    
+    
+    
+} 
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::gen::{
+        GenData,
+        GenManger
+    };
+    #[test]
+    fn test_store_can_drop(){
+        let mut gm= GenManger::new();
+        let mut vs = VecStore::new();
+        vs.add(gm.next(),5);
+        vs.add(gm.next(),3);
+        vs.add(gm.next(),2);
+        let g4 = gm.next();
+        vs.add(g4,5);
+        vs.for_each_mut(|_g,d| *d+=2);
+        assert_eq!(vs.get(g4),Some(&7));
+
+        vs.drop(g4);
+        assert_eq!(vs.get(g4), None);
+
     }
 }
