@@ -5,12 +5,12 @@ pub struct Strength{
 
 #[derive(PartialEq)]
 pub struct Pos{
-    x: i32,
-    y: i32
+   pub x: i32,
+   pub y: i32
 }
 
 pub struct Dir{
-    vx: i32,
-    vy: i32
+   pub vx: i32,
+   pub vy: i32
 }
 
