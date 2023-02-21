@@ -24,4 +24,4 @@ impl From<std::io::Error> for BlobError{
     fn from (e:std::io::Error)->Self{
         BlobError::IO(e)
     }
-}
+} 
