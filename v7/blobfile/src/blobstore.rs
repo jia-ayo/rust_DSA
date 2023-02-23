@@ -1,5 +1,7 @@
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, SeekFrom};
+use serde::{Serialize, Deserialize};
+
 use crate::error::BlobError;
 use crate::blob::{Blob,write_u64,read_u64};
 
@@ -83,6 +85,37 @@ impl BlobStore {
         write_u64(&mut self.file, self.elems);
         Ok(())
     }
+    //does not remove if already tere
+    fn insert_only<K:Serialize, V: Serialize>(&mut self, k:K, v:V)->Result<(), BlobError>{
+        let blob = Blob::from(&k, &v)?;
+        if blob.len()> self.block_size{
+            //let the wrapper make a file with a bigger
+            return  Err(BlobError::TooBig(blob.len()));
+        }
+        let bucket = blob.k_hash(self.hseed) % self.nblocks;
+        let f = &mut self.file;
+        let mut pos = f.seek(SeekFrom::Start(CONT_SIZE+self.block_size+self.nblocks))?;
+        //start each loop at beginning of an elem
+        //remeber klen == 0 means empty section
+        loop{
+            if pos > CONT_SIZE + self.block_size * (bucket + 1){
+                //reached end of data block
+                //consider other handlings but this willtell the wrapper to make space
+                //another option is to overflow onto the end of the file
+                return Err(BlobError::NoRoom);
+            }
+            let klen = read_u64(f)?;
+            let vlen = read_u64(f)?;
+            if klen == 0 &&blob.len() < vlen {
+                f.seek(SeekFrom::Start(pos))?;
+                blob.out(f)?;
+                //add pointer immediatly after data ends
+                write_u64(f, 0)?;
+                write_u64(f, (vlen - blob.len()) - 16)?;
+                return Ok(());
+            }
+        }
+    }
 } 
 
 #[cfg(test)]
@@ -96,7 +129,9 @@ mod test{
         let mut bs = BlobStore::new(fs,1000,10).unwrap();
         let block_size = bs.block_size;
         let mut b2 = BlobStore::open(fs).unwrap();
-        assert_eq!(b2.block_size,block_size)
+        assert_eq!(b2.block_size,block_size);
+
+        b2.insert_only("fish", "so long and thanks for for all teh fish").unwrap();
     }
 }
 
