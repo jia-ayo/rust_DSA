@@ -12,4 +12,6 @@ bincode = "1.2.1"
 failure="0.1.6"
 failure_derive="0.1.6"
 rand="0.7.3"
+anyhow = "1.0.31"
+thiserror = "1.0.18"
 hashmap={path="../../v5/hashmap"}
