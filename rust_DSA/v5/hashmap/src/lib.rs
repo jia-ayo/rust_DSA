@@ -1,6 +1,6 @@
 mod hasher;
 use std::{hash::Hash, fmt::Debug};
-use hasher::hash;
+pub use hasher::hash;
 use std::borrow::Borrow;
 
 const BSIZE:usize=8;

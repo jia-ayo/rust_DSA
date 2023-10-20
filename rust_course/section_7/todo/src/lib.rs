@@ -2,7 +2,6 @@ mod list {
     pub struct Tasks {
         pub item: String,
     }
-
 }
 
 mod things_todo;

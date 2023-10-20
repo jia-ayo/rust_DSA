@@ -1,4 +1,4 @@
-#[derive(Copy, Clone,PartialEq)]
+#[derive(Copy, Clone,PartialEq,Debug)]
 pub struct GenData {
     pub pos: usize,
     pub gen: u64,
