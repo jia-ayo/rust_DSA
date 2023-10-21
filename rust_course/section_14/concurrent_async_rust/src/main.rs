@@ -2,42 +2,23 @@
 // use std::thread;
 use std::sync::{Arc, Mutex};
 // use std::rc::Rc;
-use num::{one, BigUint};
+use num::{one, Biguint};
 use rayon::prelude::*;
 use std::time::Instant;
 
-fn factorial(num: u32) -> BigUint {
+fn factorial(num: u32) -> Biguint {
     if num == 0 || num == 1 {
-        return BigUint::one();
+        return Biguint::one();
     } else {
         (1..=num)
-            .map(BigUint::from)
+            .map(Biguint::from)
             .reduce(|acc, x| acc * x)
             .unwrap();
     }
 }
 
-fn multi_fact(num: u32)-> BigUint{
-    if num == 0 || num ==1{
-        return BigUint::one()
-    } else{
-        (1..=num).into_par_iter().map(BigUint::from).reduce(||BigUint::one(), |acc, x| acc * x)
-    }
-}
-
 fn main() {
-    // println!("{}", factorial(3));
-    // println!("{}" multi_fact(3))
-
-    let now = Instant::now();
-    factorial(5000);
-    println!("{:?}", now.elapsed());
-    
-    let now = Instant::now();
-    multi_fact(5000);
-    println!("{:?}", now.elapsed())
-
-
+    println!("{}", factorial(3));
     // let handle = thread::spawn(move || {
     //     println!("Hello, world!");
     // });
