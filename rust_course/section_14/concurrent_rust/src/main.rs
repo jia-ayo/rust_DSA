@@ -17,26 +17,59 @@ fn factorial(num: u32) -> BigUint {
     }
 }
 
-fn multi_fact(num: u32)-> BigUint{
-    if num == 0 || num ==1{
-        return BigUint::one()
-    } else{
-        (1..=num).into_par_iter().map(BigUint::from).reduce(||BigUint::one(), |acc, x| acc * x)
+fn multi_fact(num: u32) -> BigUint {
+    if num == 0 || num == 1 {
+        return BigUint::one();
+    } else {
+        (1..=num)
+            .into_par_iter()
+            .map(BigUint::from)
+            .reduce(|| BigUint::one(), |acc, x| acc * x)
     }
 }
 
+fn fib_recursive(n: u32) -> u32 {
+    if n < 2 {
+        return n;
+    }
+
+    fib_recursive(n - 1) + fib_recursive(n - 2)
+}
+
+fn fibonacci_join(n: u32) -> u32 {
+    if n < 2 {
+        return n;
+    }
+
+    // ASSIGNMENT
+    let (a, b) = rayon::join(|| fib_recursive(n - 1), || fib_recursive(n - 2));
+    a + b
+}
+
 fn main() {
+    let start = Instant::now();
+    let x = fib_recursive(47);
+    let duration = start.elapsed();
+    println!(
+        "Recursive fibonacci answer: {} time taken: {:?}",
+        x, duration
+    );
+    println!("now run with Rayon's join.");
+
+    let start = Instant::now();
+    let x = fibonacci_join(47);
+    let duration = start.elapsed(47);
+    println!("Rayon fibanaci answer: {}, time taken: {:?}", x, duration);
     // println!("{}", factorial(3));
     // println!("{}" multi_fact(3))
 
-    let now = Instant::now();
-    factorial(5000);
-    println!("{:?}", now.elapsed());
-    
-    let now = Instant::now();
-    multi_fact(5000);
-    println!("{:?}", now.elapsed())
+    // let now = Instant::now();
+    // factorial(5000);
+    // println!("{:?}", now.elapsed());
 
+    // let now = Instant::now();
+    // multi_fact(5000);
+    // println!("{:?}", now.elapsed())
 
     // let handle = thread::spawn(move || {
     //     println!("Hello, world!");
@@ -119,5 +152,6 @@ fn main() {
     // for handle in handles {
     //     handle.join().unwrap();
     // }
-    // println!("{}", counter.lock().unwrap())
+    // println!("{}", counter.lock().unwrap()) run
+    
 }
