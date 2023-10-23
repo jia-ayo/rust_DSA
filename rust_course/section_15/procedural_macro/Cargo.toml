@@ -1,10 +1,13 @@
 [package]
-name = "concurrent_rust"
+name = "procedural_macro"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rayon="1"
-num = "0.4"
+syn = {version = "2.0", features=["full"]}
+quote = "1.0"
+
+[lib]
+proc-macro = true
