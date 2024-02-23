@@ -3,4 +3,4 @@
 
 so go read it, like it and add to my download for a week 
 
-okey you caught me it compulsury to write a readme efore i can  publish this 
+okey you caught me it compulsury to write a readme before i can  publish this 
