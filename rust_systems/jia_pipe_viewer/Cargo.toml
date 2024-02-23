@@ -1,6 +1,6 @@
 [package]
 name = "jia_pipe_viewer"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["jia_ayo"]
 edition = "2021"
 description = "This was made for cruise but you can give it a shot"
