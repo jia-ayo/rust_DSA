@@ -1,3 +1,9 @@
+//! The module contains the stats loop 
+//!
+//!
+//! # Some eader 
+//! More discussion!
+mod timer;
 use crossbeam::channel::Receiver;
 use crossterm::{
     cursor, execute,
@@ -5,7 +11,8 @@ use crossterm::{
     terminal::{Clear, ClearType},
 };
 use std::io::{self, Result, Stderr, Write};
-use std::time::{Duration, Instant};
+use std::time::Instant;
+use timer::Timer;
 
 pub fn stats_loop(silent: bool, stats_rx: Receiver<usize>) -> Result<()> {
     let mut total_bytes = 0;
@@ -56,11 +63,21 @@ fn output_progress(stderr: &mut Stderr, bytes: usize, elapsed: String, rate: f64
     let _ = stderr.flush();
 }
 
-trait TimeOutput {
+/// The TimeOutput trait a `.as_time()` method to `u64`
+///
+/// #Example 
+/// Here is an example of how to use it.
+/// ```rust
+/// use jia_pipe_viewer::stats::TimeOutput;
+/// assert_eq!(65_u64.as_time(), String::from("Time: 0:01:05 "))
+/// ```  
+pub trait TimeOutput {
     fn as_time(&self) -> String;
 }
 
 impl TimeOutput for u64 {
+    /// Renders the u64 into a time String
+    
     fn as_time(&self) -> String {
         let (hours, left) = (*self / 3600, *self % 3600);
         let (minutes, seconds) = (left / 60, left % 60);
@@ -68,33 +85,22 @@ impl TimeOutput for u64 {
     }
 }
 
-struct Timer {
-    last_instat: Instant,
-    delta: Duration,
-    period: Duration,
-    countdown: Duration,
-    ready: bool,
-}
+#[cfg(test)]
+mod tests {
 
-impl Timer {
-    fn new() -> Self {
-        let now = Instant::now();
-        Self {
-            last_instat: now,
-            delta: Duration::default(),
-            period: Duration::from_millis(1000),
-            countdown: Duration::default(),
-            ready: true,
+    use super::TimeOutput;
+
+    #[test]
+    fn as_time_format(){
+        let pairs = vec![
+            (5_u64, "Time: 0:00:05 "),
+            (60_u64, "Time: 0:01:00 "),
+            (3603_u64, "Time: 1:00:03 "),
+            (154_u64, "Time: 0:02:34 "),
+        ];
+        for (input, output) in pairs {
+            assert_eq!(input.as_time().as_str(), output);
         }
     }
 
-    fn update(&mut self) {
-        let now = Instant::now();
-        self.delta = now - self.last_instat;
-        self.last_instat = now;
-        self.countdown = self.countdown.checked_sub(self.delta).unwrap_or_else(|| {
-            self.ready = true;
-            self.period
-        })
-    }
 }

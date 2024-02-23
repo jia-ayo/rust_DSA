@@ -1,8 +1,15 @@
 [package]
 name = "jia_pipe_viewer"
-version = "0.1.0"
+version = "0.1.2"
 authors = ["jia_ayo"]
 edition = "2021"
+description = "This was made for cruise but you can give it short"
+homepage = "https://github.com/jia-ayo/rust_DSA/tree/master/rust_systems/jia_pipe_viewer"
+repository = "https://github.com/jia-ayo/rust_DSA/tree/master/rust_systems/jia_pipe_viewer"
+readme = "README.md"
+keywords = ["fun", "cruise", "omo", ""]
+categories = ["command-line-utilities"]
+license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
