@@ -1,5 +1,6 @@
-# Guess what i am poblishing my fir crate so like go use it why you reading a read me
+# Guess what i am poblishing my first crate, so like and use it, why you reading a read me.
+## Go test it
 
-so go read it like it and add to my download a week 
+so go read it, like it and add to my download for a week 
 
-okey you caught me it complusury to poblish this 
+okey you caught me it compulsury to write a readme efore i can  publish this 
