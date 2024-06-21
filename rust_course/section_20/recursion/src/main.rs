@@ -61,7 +61,7 @@ fn main() {
     println!("{}", toh(2));
     println!("{}", toh(3));
 
-    let mut array = vec![1, 2, 3, 4, 3,7];
+    let mut array = vec![1, 2, 3, 4, 3,7];//can not go beyond  6 item array
     let size = array.len();
     triangle(&mut array, size);
 }
