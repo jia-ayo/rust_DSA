@@ -1,5 +1,4 @@
 type Link<T> = Option<Box<Node<T>>>;
-
 pub struct List<T> {
     head: Link<T>,
 }
@@ -99,6 +98,42 @@ impl<T> Drop for List<T> {
     }
 }
 
+
+
+use std::collections::LinkedList;
+
+pub struct Queue<T>{
+    element: LinkedList<T>
+}
+
+impl<T> Queue<T>  {
+    pub fn new() -> Queue<T> {
+        Queue{
+            element: LinkedList::new(),
+        }
+    }
+
+    pub fn enqueue(&mut self, value: T){
+        self.element.push_back(value)
+    }
+
+    pub fn  dequeue(&mut self) -> Option<T>{
+        self.element.pop_front()
+    }
+
+    pub fn peek(&self) -> Option<&T>{
+        self.element.front()
+    }
+
+    pub fn length(&self) -> usize{
+        self.element.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.element.is_empty()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -183,5 +218,25 @@ mod test {
         assert_eq!(iter.next(), Some(&mut 2));
         assert_eq!(iter.next(), Some(&mut 1));
         assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn queue(){
+        let mut queue = Queue::new();
+
+        // Check if empty list behave correctly
+        assert_eq!(queue.is_empty(), true);
+
+        // Populate List
+        queue.enqueue(1);
+        queue.enqueue(2);
+        queue.enqueue(3);
+        queue.enqueue(4);
+
+        assert_eq!(queue.length(), 4);
+        assert_eq!(queue.is_empty(), false);
+        assert_eq!(queue.dequeue(), Some(1));
+        assert_eq!(queue.peek(), Some(&2))
+
     }
 }
