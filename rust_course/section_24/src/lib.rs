@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::ops::Deref;
 
 pub struct BinarySearchTree<T>
@@ -58,6 +59,108 @@ where
                     }
                 }
             }
+        }
+    }
+
+    pub fn search(&self, value: &T) -> bool {
+        match &self.value {
+            Some(key) => {
+                match key.cmp(value) {
+                    Ordering::Equal => {
+                        //key === value
+                        true
+                    }
+                    Ordering::Greater => match &self.left {
+                        Some(node) => node.search(value),
+                        None => false,
+                    },
+                    Ordering::Less => {
+                        // key < value
+                        match &self.right {
+                            Some(node) => node.search(value),
+                            None => false,
+                        }
+                    }
+                }
+            }
+            None => false,
+        }
+    }
+
+    // return smallest value in a tree
+    pub fn minimum(&self) -> Option<&T> {
+        match &self.left {
+            Some(node) => node.minimum(),
+            None => self.value.as_ref(),
+        }
+    }
+
+    pub fn maximum(&self) -> Option<&T> {
+        match &self.right {
+            Some(node) => node.maximum(),
+            None => self.value.as_ref(),
+        }
+    }
+
+    //floor te largest value in the tree  smaller than the value parameter
+    pub fn floor(&self, value: &T) -> Option<&T> {
+        match &self.value {
+            Some(key) => {
+                match key.cmp(value) {
+                    Ordering::Greater => {
+                        //key > value
+                        match &self.left {
+                            Some(node) => node.floor(value),
+                            None => None,
+                        }
+                    }
+                    Ordering::Less => {
+                        //key < value
+                        match &self.right {
+                            Some(node) => {
+                                let val = node.floor(value);
+                                match val {
+                                    Some(_) => val,
+                                    None => Some(key),
+                                }
+                            }
+                            None => Some(key),
+                        }
+                    }
+                    Ordering::Equal => Some(key),
+                }
+            }
+            None => None,
+        }
+    }
+    pub fn ceil(&self, value: &T) -> Option<&T> {
+        match &self.value {
+            Some(key) => {
+                match key.cmp(value) {
+                    Ordering::Greater => {
+                        // key > value
+                        match &self.left {
+                            Some(node) => {
+                                let val = node.ceil(value);
+                                match val {
+                                    Some(_) => val,
+                                    None => Some(key),
+                                }
+                            }
+                            None => Some(key),
+                        }
+                    }
+                    Ordering::Less => {
+                        // key < value
+                        match &self.right {
+                            Some(node) => node.ceil(value),
+                            None => None,
+                        }
+                    }
+                    Ordering::Equal => Some(key),
+                }
+            }
+            None => None,
         }
     }
 }
@@ -121,7 +224,8 @@ mod test {
     }
 
     #[test]
-    fn test_iterator(){//iterate the tree with values ffrom least to greatest
+    fn test_iterator() {
+        //iterate the tree with values ffrom least to greatest
         let tree = create_tree();
         let mut iter = tree.iter();
         assert_eq!(iter.next().unwrap(), &0);
@@ -132,6 +236,31 @@ mod test {
         assert_eq!(iter.next().unwrap(), &34);
         assert_eq!(iter.next().unwrap(), &43);
         assert_eq!(iter.next(), None);
+    }
 
+    #[test]
+    fn text_search() {
+        let tree = create_tree();
+        assert!(tree.search(&5));
+        assert!(tree.search(&7));
+        assert!(tree.search(&15));
+        assert!(!tree.search(&2));
+    }
+
+    #[test]
+    fn test_max_and_min() {
+        let tree = create_tree();
+        assert_eq!(*tree.maximum().unwrap(), 43);
+        assert_eq!(*tree.minimum().unwrap(), 0);
+    }
+
+    #[test]
+    fn test_floor_and_ceil() {
+        let tree = create_tree();
+        assert_eq!(*tree.floor(&42).unwrap(), 34);
+        assert_eq!(*tree.floor(&30).unwrap(), 27);
+
+        //test cell method
+        assert_eq!(*tree.ceil(&6).unwrap(), 7);
     }
 }
